@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curvas de Tiempo Inverso — IEC / IEEE</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2433;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8ecf4;
+    --text2: #8a92a6;
+    --text3: #555e72;
+    --accent: #3b82f6;
+    --font: 'IBM Plex Mono', 'Courier New', monospace;
+    --font2: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font2);
+    font-size: 13px;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* HEADER */
+  .header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-title {
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text2);
+    letter-spacing: .04em;
+  }
+  .header-eq {
+    font-family: var(--font);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: calc(100vh - 49px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    background: var(--surface);
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .eq-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 2;
+  }
+  .eq-tab {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 11px;
+    font-family: var(--font);
+    color: var(--text3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    letter-spacing: .03em;
+  }
+  .eq-tab:hover { color: var(--text2); }
+  .eq-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .eq-form { padding: 12px; }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .name-row label { font-size: 10px; color: var(--text3); white-space: nowrap; font-family: var(--font); }
+  .name-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: var(--font);
+    padding: 5px 8px;
+    height: 28px;
+  }
+
+  .zone-label {
+    font-size: 10px;
+    font-family: var(--font);
+    letter-spacing: .1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 6px 0 6px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .zone-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .zone-cell {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 6px;
+  }
+  .zone-cell-title {
+    font-size: 10px;
+    font-family: var(--font);
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .fld { margin-bottom: 5px; }
+  .fld label { display: block; font-size: 10px; color: var(--text3); margin-bottom: 2px; }
+  .fld input, .fld select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    color: var(--text);
+    font-size: 11px;
+    font-family: var(--font);
+    padding: 3px 5px;
+    height: 24px;
+  }
+  .fld select option { background: var(--bg); }
+  .fld input:focus, .fld select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* ACTIONS */
+  .actions {
+    padding: 10px 12px;
+    display: flex;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+  }
+  .btn-main {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: var(--font);
+    padding: 7px 12px;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: opacity .15s;
+  }
+  .btn-main:hover { opacity: .85; }
+  .btn-sec {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: var(--font);
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-sec:hover { background: var(--border); }
+
+  /* CHART AREA */
+  .chart-area {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  .chart-wrap {
+    flex: 1;
+    padding: 16px 16px 4px;
+    min-height: 0;
+  }
+  #chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .info-bar {
+    padding: 6px 16px 10px;
+    font-size: 11px;
+    font-family: var(--font);
+    color: var(--text3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .info-bar span { color: var(--text2); }
+
+  /* LEGEND */
+  .legend-bar {
+    padding: 8px 16px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-family: var(--font);
+    color: var(--text2);
+  }
+  .leg-line {
+    width: 22px;
+    height: 2px;
+    flex-shrink: 0;
+  }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
+    .sidebar { height: auto; max-height: 55vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .chart-area { height: 60vw; min-height: 300px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="header">
+  <span class="header-title">CURVAS DE TIEMPO INVERSO — IEC / IEEE</span>
+  <span class="header-eq" id="header-eq"></span>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="eq-tabs">
+      <button class="eq-tab active" id="tab0" onclick="showEq(0)">EQ 1</button>
+      <button class="eq-tab" id="tab1" onclick="showEq(1)">EQ 2</button>
+      <button class="eq-tab" id="tab2" onclick="showEq(2)">EQ 3</button>
+    </div>
+    <div id="forms-container"></div>
+    <div class="actions">
+      <button class="btn-main" onclick="draw()">GRAFICAR</button>
+      <button class="btn-sec" onclick="clearChart()">CLR</button>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-area">
+    <div class="legend-bar" id="legend"><span style="font-size:10px;font-family:var(--font);color:var(--text3)">— presiona GRAFICAR para ver la leyenda —</span></div>
+    <div class="chart-wrap">
+      <svg id="chart" viewBox="0 0 680 420" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="info-bar" id="info">Completa los datos en el panel izquierdo y presiona GRAFICAR.</div>
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTES ───────────────────────────────────────────────────────────────
+const NS = 'http://www.w3.org/2000/svg';
+const PAD = { l: 56, r: 20, t: 16, b: 40 };
+const W = 680, H = 420;
+const XMIN = 1.05, XMAX = 40, YMIN = 0.01, YMAX = 100;
+
+const CP = {
+  IEC_NI:  { label: 'IEC_NI',   a: 0.0140, b: 0.02, c: 1,      td: false },
+  IEC_VI:  { label: 'IEC_VI',   a: 13.5,   b: 1,    c: 1,      td: false },
+  IEC_EI:  { label: 'IEC_EI',   a: 80.0,   b: 2,    c: 1,      td: false },
+  IEC_LTI: { label: 'IEC_LTI',  a: 120.0,  b: 1,    c: 0,      td: false },
+  ANSI_NI: { label: 'ANSI_NI',  a: 0.0515, b: 0.02, c: 0.114,  td: false },
+  ANSI_VI: { label: 'ANSI_VI',  a: 19.61,  b: 2,    c: 0.491,  td: false },
+  ANSI_EI: { label: 'ANSI_EI',  a: 28.2,   b: 2,    c: 0.1217, td: false },
+  TD:      { label: 'TD',       a: 0,      b: 1,    c: 0,      td: true  },
+};
+
+// Colores por equipo: OC y EF distintos
+const EQC = [
+  { oc: '#3b82f6', ef: '#f97316' },  // EQ1: azul / naranja
+  { oc: '#22c55e', ef: '#a855f7' },  // EQ2: verde / violeta
+  { oc: '#eab308', ef: '#ec4899' },  // EQ3: amarillo / rosa
+];
+
+const DASH_STYLES = ['', '6,3', '2,3'];  // zona 1 = sólido, 2 = rayado, 3 = punteado
+
+const CURVE_OPTS = ['', 'IEC_NI', 'IEC_VI', 'IEC_EI', 'IEC_LTI', 'ANSI_NI', 'ANSI_VI', 'ANSI_EI', 'TD'];
+const ZONES = ['OC', 'EF'];
+
+// ─── DEFAULTS ─────────────────────────────────────────────────────────────────
+const DEFAULTS = [
+  {
+    name: 'MICOM P142',
+    OC: [
+      { arraque: 125, curva: 'IEC_NI', tiempo: 0.5, tmin: 0.1 },
+      { arraque: '', curva: '', tiempo: '', tmin: '' },
+      { arraque: '', curva: '', tiempo: '', tmin: '' },
+    ],
+    EF: [
+      { arraque: 30, curva: 'IEC_NI', tiempo: 0.5, tmin: 0.1 },
+      { arraque: '', curva: '', tiempo: '', tmin: '' },
+      { arraque: '', curva: '', tiempo: '', tmin: '' },
+    ],
+  },
+  {
+    name: 'Equipo 2',
+    OC: Array(3).fill(null).map(() => ({ arraque: '', curva: '', tiempo: '', tmin: '' })),
+    EF: Array(3).fill(null).map(() => ({ arraque: '', curva: '', tiempo: '', tmin: '' })),
+  },
+  {
+    name: 'Equipo 3',
+    OC: Array(3).fill(null).map(() => ({ arraque: '', curva: '', tiempo: '', tmin: '' })),
+    EF: Array(3).fill(null).map(() => ({ arraque: '', curva: '', tiempo: '', tmin: '' })),
+  },
+];
+
+// ─── LEER PARÁMETROS URL ──────────────────────────────────────────────────────
+// Permite recibir datos desde AppSheet via query string:
+// ?e0name=MICOM&e0OC0arr=125&e0OC0cur=NI&e0OC0tms=0.5&e0OC0tmn=0.1 ...
+(function readURL() {
+  const p = new URLSearchParams(window.location.search);
+  for (let e = 0; e < 3; e++) {
+    const n = p.get('e' + e + 'name');
+    if (n) DEFAULTS[e].name = n;
+    for (const zone of ZONES) {
+      for (let i = 0; i < 3; i++) {
+        const prefix = `e${e}${zone}${i}`;
+        const arr = p.get(prefix + 'arr'); if (arr) DEFAULTS[e][zone][i].arraque = arr;
+        const cur = p.get(prefix + 'cur'); if (cur) DEFAULTS[e][zone][i].curva = cur;
+        const tms = p.get(prefix + 'tms'); if (tms) DEFAULTS[e][zone][i].tiempo = tms;
+        const tmn = p.get(prefix + 'tmn'); if (tmn) DEFAULTS[e][zone][i].tmin = tmn;
+      }
+    }
+  }
+})();
+
+// ─── CONSTRUIR FORMULARIOS ────────────────────────────────────────────────────
+function buildForms() {
+  const cont = document.getElementById('forms-container');
+  for (let e = 0; e < 3; e++) {
+    const d = DEFAULTS[e];
+    const div = document.createElement('div');
+    div.id = 'ep' + e;
+    div.style.display = e === 0 ? 'block' : 'none';
+    let h = `<div class="eq-form">
+      <div class="name-row">
+        <label>NOMBRE</label>
+        <input type="text" id="e${e}name" value="${d.name}">
+      </div>`;
+    for (const zone of ZONES) {
+      const zd = d[zone];
+      const col = zone === 'OC' ? EQC[e].oc : EQC[e].ef;
+      h += `<div class="zone-label" style="color:${col}">${zone}</div>
+      <div class="zone-grid">`;
+      for (let i = 0; i < 3; i++) {
+        const zz = zd[i];
+        h += `<div class="zone-cell">
+          <div class="zone-cell-title" style="color:${col}">${zone} ${i + 1}</div>
+          <div class="fld"><label>ARRANQUE (×In)</label>
+            <input type="number" id="e${e}${zone}${i}arr" value="${zz.arraque}" min="1" step="0.1" placeholder="125"></div>
+          <div class="fld"><label>CURVA</label>
+            <select id="e${e}${zone}${i}cur">
+              ${CURVE_OPTS.map(o => `<option value="${o}"${o === zz.curva ? ' selected' : ''}>${o || '—'}</option>`).join('')}
+            </select></div>
+          <div class="fld"><label>TMS</label>
+            <input type="number" id="e${e}${zone}${i}tms" value="${zz.tiempo}" min="0.01" step="0.01" placeholder="0.5"></div>
+          <div class="fld"><label>T_MIN (s)</label>
+            <input type="number" id="e${e}${zone}${i}tmn" value="${zz.tmin}" min="0" step="0.01" placeholder="0.1"></div>
+        </div>`;
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+    div.innerHTML = h;
+    cont.appendChild(div);
+  }
+}
+
+function showEq(i) {
+  for (let e = 0; e < 3; e++) {
+    document.getElementById('ep' + e).style.display = e === i ? 'block' : 'none';
+    document.getElementById('tab' + e).classList.toggle('active', e === i);
+  }
+}
+
+// ─── UTILIDADES SVG / MATEMÁTICAS ─────────────────────────────────────────────
+function g(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+function lp(val, min, max, a, b) {
+  return a + (Math.log10(val) - Math.log10(min)) / (Math.log10(max) - Math.log10(min)) * (b - a);
+}
+function px(x) { return lp(x, XMIN, XMAX, PAD.l, W - PAD.r); }
+function py(y) { return lp(y, YMIN, YMAX, H - PAD.b, PAD.t); }
+
+function calcT(curva, M, TMS, tmin) {
+  const p = CP[curva];
+  if (!p) return null;
+  if (p.td) {
+    // Tiempo Definido: si M >= 1 (I >= Ip) dispara en tmin
+    return M >= 1 ? (tmin || TMS) : null;
+  }
+  const d = Math.pow(M, p.b) - 1;
+  if (d <= 0) return null;
+  const t = TMS * (p.a / d + p.c);
+  return t;
+}
+
+function mk(tag, at) {
+  const el = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(at)) el.setAttribute(k, v);
+  return el;
+}
+
+// ─── GRILLA LOGARÍTMICA ───────────────────────────────────────────────────────
+function buildGrid() {
+  const gg = mk('g', {});
+  const gc = 'rgba(255,255,255,0.05)';
+  const lc = '#4a5268';
+  const lc2 = '#2e3447';
+
+  const xMajor = [2, 5, 10, 20];
+  const xMinor = [1.1, 1.2, 1.5, 3, 4, 7, 15, 30, 40];
+  const yMajor = [0.1, 1, 10, 100];
+  const yMinor = [0.01, 0.02, 0.05, 0.2, 0.5, 2, 5, 20, 50];
+
+  for (const x of [...xMajor, ...xMinor]) {
+    if (x < XMIN || x > XMAX) continue;
+    const xl = px(x);
+    const isMaj = xMajor.includes(x);
+    gg.appendChild(mk('line', { x1: xl, y1: PAD.t, x2: xl, y2: H - PAD.b, stroke: isMaj ? 'rgba(255,255,255,0.08)' : gc, 'stroke-width': '0.5' }));
+    if (isMaj || [1.5, 3, 7, 15, 40].includes(x)) {
+      const t = mk('text', { x: xl, y: H - PAD.b + 14, 'text-anchor': 'middle', 'font-size': '9', fill: isMaj ? lc : lc2, 'font-family': 'IBM Plex Mono, monospace' });
+      t.textContent = x + '×';
+      gg.appendChild(t);
+    }
+  }
+  for (const y of [...yMajor, ...yMinor]) {
+    if (y < YMIN || y > YMAX) continue;
+    const yl = py(y);
+    const isMaj = yMajor.includes(y);
+    gg.appendChild(mk('line', { x1: PAD.l, y1: yl, x2: W - PAD.r, y2: yl, stroke: isMaj ? 'rgba(255,255,255,0.08)' : gc, 'stroke-width': '0.5' }));
+    const t = mk('text', { x: PAD.l - 5, y: yl + 3.5, 'text-anchor': 'end', 'font-size': '9', fill: isMaj ? lc : lc2, 'font-family': 'IBM Plex Mono, monospace' });
+    t.textContent = y < 1 ? y.toFixed(2) : y;
+    gg.appendChild(t);
+  }
+
+  // Marco
+  gg.appendChild(mk('rect', { x: PAD.l, y: PAD.t, width: W - PAD.l - PAD.r, height: H - PAD.t - PAD.b, fill: 'none', stroke: 'rgba(255,255,255,0.1)', 'stroke-width': '1' }));
+
+  // Etiquetas de ejes
+  const xl = mk('text', { x: (PAD.l + W - PAD.r) / 2, y: H - 2, 'text-anchor': 'middle', 'font-size': '10', fill: lc, 'font-family': 'IBM Plex Mono, monospace' });
+  xl.textContent = 'MÚLTIPLO DE CORRIENTE  I / Ip';
+  gg.appendChild(xl);
+
+  const mid = (PAD.t + H - PAD.b) / 2;
+  const yl = mk('text', { x: 10, y: mid, 'text-anchor': 'middle', 'font-size': '10', fill: lc, 'font-family': 'IBM Plex Mono, monospace', transform: `rotate(-90,10,${mid})` });
+  yl.textContent = 'TIEMPO DE OPERACIÓN (s)';
+  gg.appendChild(yl);
+
+  return gg;
+}
+
+// ─── DIBUJAR ──────────────────────────────────────────────────────────────────
+let drawnPaths = [];
+
+function draw() {
+  const svg = document.getElementById('chart');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  drawnPaths = [];
+
+  svg.appendChild(buildGrid());
+
+  const leg = document.getElementById('legend');
+  leg.innerHTML = '';
+  let legItems = [];
+
+  for (let e = 0; e < 3; e++) {
+    const name = g('e' + e + 'name') || ('Equipo ' + (e + 1));
+    for (const zone of ZONES) {
+      const color = zone === 'OC' ? EQC[e].oc : EQC[e].ef;
+      for (let i = 0; i < 3; i++) {
+        const curva = g(`e${e}${zone}${i}cur`);
+        const TMS = parseFloat(g(`e${e}${zone}${i}tms`));
+        const tmin = parseFloat(g(`e${e}${zone}${i}tmn`));
+        if (!curva || isNaN(TMS) || TMS <= 0) continue;
+
+        // Calcular puntos
+        const pts = [];
+        if (CP[curva] && CP[curva].td) {
+          // Curva TD: línea horizontal desde Ip hasta XMAX
+          const yTD = py(!isNaN(tmin) && tmin > 0 ? tmin : TMS);
+          pts.push([px(XMIN).toFixed(1), yTD.toFixed(1)]);
+          pts.push([px(XMAX).toFixed(1), yTD.toFixed(1)]);
+        } else {
+          for (let s = 0; s <= 500; s++) {
+            const M = Math.pow(10, Math.log10(XMIN) + (s / 500) * (Math.log10(XMAX) - Math.log10(XMIN)));
+            const t = calcT(curva, M, TMS, tmin);
+            if (t === null || t < YMIN || t > YMAX) continue;
+            pts.push([px(M).toFixed(1), py(t).toFixed(1)]);
+          }
+        }
+        if (pts.length < 2) continue;
+
+        const d = 'M' + pts.map(p => p.join(',')).join('L');
+        const path = mk('path', { d, fill: 'none', stroke: color, 'stroke-width': i === 0 ? '2' : '1.5', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+        if (DASH_STYLES[i]) path.setAttribute('stroke-dasharray', DASH_STYLES[i]);
+        path.setAttribute('data-e', e);
+        path.setAttribute('data-zone', zone);
+        path.setAttribute('data-i', i);
+        path.setAttribute('data-cv', curva);
+        path.setAttribute('data-tms', TMS);
+        svg.appendChild(path);
+        drawnPaths.push({ e, zone, i, curva, TMS, tmin, color, name });
+
+        // Línea t_min
+        if (!isNaN(tmin) && tmin > 0 && tmin >= YMIN && tmin <= YMAX) {
+          const yt = py(tmin);
+          svg.appendChild(mk('line', { x1: PAD.l, y1: yt, x2: W - PAD.r, y2: yt, stroke: color, 'stroke-width': '0.8', 'stroke-dasharray': '2,4', opacity: '0.45' }));
+          const lt = mk('text', { x: W - PAD.r - 3, y: yt - 3, 'text-anchor': 'end', 'font-size': '8.5', fill: color, opacity: '0.7', 'font-family': 'IBM Plex Mono, monospace' });
+          lt.textContent = `t_min ${zone}${i + 1}=${tmin}s`;
+          svg.appendChild(lt);
+        }
+
+        // Leyenda
+        legItems.push({ label: `${name} · ${zone}${i + 1} · ${CP[curva].label} TMS=${TMS}`, color, dash: DASH_STYLES[i], w: i === 0 ? 2 : 1.5 });
+      }
+    }
+  }
+
+  // Overlay para hover
+  const ovl = mk('rect', { x: PAD.l, y: PAD.t, width: W - PAD.l - PAD.r, height: H - PAD.t - PAD.b, fill: 'transparent', cursor: 'crosshair' });
+  ovl.addEventListener('mousemove', ev => {
+    const r = svg.getBoundingClientRect(), sc = W / r.width;
+    const mx = (ev.clientX - r.left) * sc;
+    const logX = Math.log10(XMIN) + (mx - PAD.l) / (W - PAD.l - PAD.r) * (Math.log10(XMAX) - Math.log10(XMIN));
+    const M = Math.pow(10, logX);
+    if (M < XMIN || M > XMAX) return;
+    const parts = drawnPaths.map(p => {
+      const t = calcT(p.curva, M, p.TMS, p.tmin);
+      return (t && t >= YMIN && t <= YMAX) ? `<span style="color:${p.color}">${p.name} ${p.zone}${p.i + 1}: ${t.toFixed(3)}s</span>` : null;
+    }).filter(Boolean);
+    document.getElementById('info').innerHTML = parts.length
+      ? `I/Ip = ${M.toFixed(2)}×&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;` + parts.join('&nbsp;&nbsp;&nbsp;')
+      : '';
+  });
+  ovl.addEventListener('mouseleave', () => {
+    document.getElementById('info').textContent = 'Pasa el cursor sobre el gráfico para ver valores.';
+  });
+  svg.appendChild(ovl);
+
+  // Renderizar leyenda
+  if (legItems.length) {
+    legItems.forEach(ld => {
+      const item = document.createElement('div');
+      item.className = 'leg-item';
+      item.innerHTML = `<svg width="22" height="10" viewBox="0 0 22 10" style="flex-shrink:0"><line x1="0" y1="5" x2="22" y2="5" stroke="${ld.color}" stroke-width="${ld.w}"${ld.dash ? ` stroke-dasharray="${ld.dash}"` : ''}></line></svg><span>${ld.label}</span>`;
+      leg.appendChild(item);
+    });
+  } else {
+    leg.innerHTML = '<span style="font-size:10px;font-family:var(--font);color:var(--text3)">— sin curvas activas —</span>';
+  }
+
+  // Header
+  const eqNames = [0, 1, 2].map(e => g('e' + e + 'name') || ('Eq' + (e + 1))).join(' · ');
+  document.getElementById('header-eq').textContent = eqNames;
+}
+
+function clearChart() {
+  const svg = document.getElementById('chart');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  svg.appendChild(buildGrid());
+  drawnPaths = [];
+  document.getElementById('legend').innerHTML = '<span style="font-size:10px;font-family:var(--font);color:var(--text3)">— presiona GRAFICAR para ver la leyenda —</span>';
+  document.getElementById('info').textContent = 'Completa los datos y presiona GRAFICAR.';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildForms();
+draw();
+</script>
+</body>
+</html>
